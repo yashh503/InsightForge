@@ -20,10 +20,11 @@ const generatedReports = new Map();
  * Body params:
  * - sessionId: string (from upload response)
  * - useFallback: boolean (optional, skip AI if true)
+ * - themeId: string (optional, color theme - default, emerald, purple, slate, coral)
  */
 router.post('/generate-report', async (req, res, next) => {
   try {
-    const { sessionId, useFallback = false } = req.body;
+    const { sessionId, useFallback = false, themeId = 'default' } = req.body;
 
     if (!sessionId) {
       return res.status(400).json({
@@ -70,14 +71,14 @@ router.post('/generate-report', async (req, res, next) => {
       }
     }
 
-    // Generate PDF
-    console.log('📄 Generating PDF...');
-    const pdfFilename = await generatePDF(reportData, insights);
+    // Generate PDF with theme
+    console.log(`📄 Generating PDF with theme: ${themeId}...`);
+    const pdfFilename = await generatePDF(reportData, insights, themeId);
     console.log(`✅ PDF generated: ${pdfFilename}`);
 
-    // Generate PPT
-    console.log('📊 Generating PPT...');
-    const pptFilename = await generatePPT(reportData, insights);
+    // Generate PPT with theme
+    console.log(`📊 Generating PPT with theme: ${themeId}...`);
+    const pptFilename = await generatePPT(reportData, insights, themeId);
     console.log(`✅ PPT generated: ${pptFilename}`);
 
     // Store generated report

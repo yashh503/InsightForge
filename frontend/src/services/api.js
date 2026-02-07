@@ -141,14 +141,17 @@ export async function comparePeriods(sessionId, options = {}) {
 
 /**
  * Generate report with AI insights
+ * @param {string} sessionId - Session ID from upload
+ * @param {boolean} useFallback - Skip AI if true
+ * @param {string} themeId - Color theme (default, emerald, purple, slate, coral)
  */
-export async function generateReport(sessionId, useFallback = false) {
+export async function generateReport(sessionId, useFallback = false, themeId = 'default') {
   const response = await fetch(`${API_BASE}/generate-report`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ sessionId, useFallback }),
+    body: JSON.stringify({ sessionId, useFallback, themeId }),
   });
 
   const data = await response.json();

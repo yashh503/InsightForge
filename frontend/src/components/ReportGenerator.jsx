@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { generateReport } from '../services/api';
+import ColorThemePicker from './ColorThemePicker';
 
 // Icons
 const SparklesIcon = ({ className }) => (
@@ -35,12 +36,13 @@ const BoltIcon = ({ className }) => (
 function ReportGenerator({ sessionId, onGenerated, onError, darkMode }) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [useFallback, setUseFallback] = useState(false);
+  const [selectedTheme, setSelectedTheme] = useState('default');
 
   const handleGenerate = async () => {
     setIsGenerating(true);
 
     try {
-      const response = await generateReport(sessionId, useFallback);
+      const response = await generateReport(sessionId, useFallback, selectedTheme);
       onGenerated(response);
     } catch (error) {
       onError(error.message);
@@ -120,6 +122,15 @@ function ReportGenerator({ sessionId, onGenerated, onError, darkMode }) {
             </div>
           );
         })}
+      </div>
+
+      {/* Color Theme Selection */}
+      <div className="mb-6">
+        <ColorThemePicker
+          selectedTheme={selectedTheme}
+          onThemeChange={setSelectedTheme}
+          darkMode={darkMode}
+        />
       </div>
 
       {/* Skip AI Option */}

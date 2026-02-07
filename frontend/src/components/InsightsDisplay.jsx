@@ -56,24 +56,36 @@ function InsightsDisplay({ insights, darkMode }) {
   } = insights;
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Executive Summary */}
-      <div className="card p-6">
+    <div className="space-y-6 animate-fade-in-scale">
+      {/* Executive Summary - Premium Card */}
+      <div className={`card p-6 relative overflow-hidden transition-all duration-300 hover:shadow-xl ${
+        darkMode ? 'hover:shadow-indigo-500/10' : 'hover:shadow-indigo-100'
+      }`}>
+        {/* Subtle gradient accent */}
+        <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${
+          darkMode ? 'from-indigo-500 via-purple-500 to-pink-500' : 'from-indigo-400 via-purple-400 to-pink-400'
+        }`} />
+
         <h3 className={`text-lg font-semibold mb-4 flex items-center gap-3 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-transform duration-300 hover:scale-110 ${
             darkMode ? 'bg-indigo-500/20' : 'bg-indigo-100'
           }`}>
             <ClipboardIcon className={`w-5 h-5 ${darkMode ? 'text-indigo-400' : 'text-indigo-600'}`} />
           </div>
           Executive Summary
+          <span className={`ml-auto px-2 py-0.5 text-xs font-bold rounded-full ${
+            darkMode ? 'bg-purple-500/20 text-purple-400' : 'bg-purple-100 text-purple-600'
+          }`}>AI</span>
         </h3>
         <p className={`text-base leading-relaxed ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>{executiveSummary}</p>
       </div>
 
-      {/* Key Insights */}
-      <div className="card p-6">
+      {/* Key Insights - Premium Card */}
+      <div className={`card p-6 transition-all duration-300 hover:shadow-xl ${
+        darkMode ? 'hover:shadow-amber-500/10' : 'hover:shadow-amber-100'
+      }`}>
         <h3 className={`text-lg font-semibold mb-4 flex items-center gap-3 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-transform duration-300 hover:scale-110 ${
             darkMode ? 'bg-amber-500/20' : 'bg-amber-100'
           }`}>
             <LightBulbIcon className={`w-5 h-5 ${darkMode ? 'text-amber-400' : 'text-amber-600'}`} />
@@ -84,11 +96,12 @@ function InsightsDisplay({ insights, darkMode }) {
           {keyInsights.map((insight, index) => (
             <li
               key={index}
-              className={`flex gap-3 p-4 rounded-xl transition-all hover:translate-x-1 ${
-                darkMode ? 'bg-slate-800/50' : 'bg-slate-50'
+              className={`flex gap-3 p-4 rounded-xl transition-all duration-300 hover:translate-x-2 hover:shadow-md ${
+                darkMode ? 'bg-slate-800/50 hover:bg-slate-800/70' : 'bg-slate-50 hover:bg-white'
               }`}
+              style={{ animationDelay: `${index * 100}ms` }}
             >
-              <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
+              <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 shadow-sm ${
                 darkMode ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-100 text-amber-600'
               }`}>
                 {index + 1}

@@ -35,7 +35,7 @@ function DownloadButtons({ sessionId, darkMode }) {
   };
 
   return (
-    <div className="card p-6 animate-fade-in">
+    <div className="card p-6 animate-fade-in-scale relative overflow-hidden">
       {/* Success Header */}
       <div className="text-center mb-6">
         <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 ${

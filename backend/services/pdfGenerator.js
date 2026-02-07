@@ -2,6 +2,7 @@ import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { getTheme } from '../config/colorThemes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -9,29 +10,37 @@ const __dirname = path.dirname(__filename);
 /**
  * PDF Generator Service
  * Creates professional PDF reports from structured data
+ *
+ * Branding: InsightForge
  */
 
-// Color scheme
-const COLORS = {
-  primary: '#2563eb',    // Blue
-  secondary: '#64748b',  // Slate
-  success: '#16a34a',    // Green
-  danger: '#dc2626',     // Red
-  text: '#1e293b',       // Dark slate
-  lightText: '#64748b',  // Light slate
-  border: '#e2e8f0',     // Light gray
-  background: '#f8fafc', // Very light gray
-};
+// Brand name constant
+const BRAND_NAME = 'InsightForge';
 
 /**
  * Generate PDF report
  *
  * @param {Object} reportData - Complete report data with insights
  * @param {Object} insights - AI-generated insights
+ * @param {string} themeId - Color theme ID (default, emerald, purple, slate, coral)
  * @returns {string} Path to generated PDF file
  */
-export async function generatePDF(reportData, insights) {
-  const { meta, metrics, tables, charts } = reportData;
+export async function generatePDF(reportData, insights, themeId = 'default') {
+  const { meta, metrics, tables } = reportData;
+  const theme = getTheme(themeId);
+
+  // Use theme colors in hex format for PDF
+  const COLORS = {
+    primary: theme.primaryHex,
+    secondary: theme.secondaryHex,
+    success: theme.successHex,
+    danger: theme.dangerHex,
+    text: theme.textHex,
+    lightText: theme.lightTextHex,
+    border: theme.borderHex,
+    background: theme.backgroundHex,
+    accent: theme.accentHex,
+  };
 
   // Create output directory if it doesn't exist
   const outputDir = path.join(__dirname, '..', 'generated');
@@ -60,13 +69,13 @@ export async function generatePDF(reportData, insights) {
       const stream = fs.createWriteStream(filepath);
       doc.pipe(stream);
 
-      // Add content
-      addHeader(doc, meta);
-      addExecutiveSummary(doc, insights);
-      addKeyMetrics(doc, metrics);
-      addInsights(doc, insights);
-      addDataTable(doc, tables);
-      addFooter(doc);
+      // Add content with theme colors
+      addHeader(doc, meta, COLORS);
+      addExecutiveSummary(doc, insights, COLORS);
+      addKeyMetrics(doc, metrics, COLORS);
+      addInsights(doc, insights, COLORS);
+      addDataTable(doc, tables, COLORS);
+      addFooter(doc, COLORS);
 
       doc.end();
 
@@ -82,7 +91,15 @@ export async function generatePDF(reportData, insights) {
 /**
  * Add header section with title and metadata
  */
-function addHeader(doc, meta) {
+function addHeader(doc, meta, COLORS) {
+  // Accent line at top
+  doc
+    .fillColor(COLORS.primary)
+    .rect(50, 40, 200, 4)
+    .fill();
+
+  doc.y = 55;
+
   // Title
   doc
     .fillColor(COLORS.primary)
@@ -129,7 +146,7 @@ function addHeader(doc, meta) {
 /**
  * Add executive summary section
  */
-function addExecutiveSummary(doc, insights) {
+function addExecutiveSummary(doc, insights, COLORS) {
   doc
     .fillColor(COLORS.primary)
     .fontSize(14)
@@ -137,6 +154,21 @@ function addExecutiveSummary(doc, insights) {
     .text('Executive Summary');
 
   doc.moveDown(0.3);
+
+  // AI badge
+  const badgeY = doc.y;
+  doc
+    .fillColor(COLORS.accent || COLORS.primary)
+    .roundedRect(50, badgeY, 25, 14, 3)
+    .fill();
+
+  doc
+    .fillColor('#ffffff')
+    .fontSize(8)
+    .font('Helvetica-Bold')
+    .text('AI', 50, badgeY + 3, { width: 25, align: 'center' });
+
+  doc.y = badgeY + 20;
 
   doc
     .fillColor(COLORS.text)
@@ -153,7 +185,7 @@ function addExecutiveSummary(doc, insights) {
 /**
  * Add key metrics in a grid layout
  */
-function addKeyMetrics(doc, metrics) {
+function addKeyMetrics(doc, metrics, COLORS) {
   // Check if we need a new page
   if (doc.y > 650) {
     doc.addPage();
@@ -194,12 +226,18 @@ function addKeyMetrics(doc, metrics) {
       .roundedRect(x, y, colWidth, rowHeight - 5, 5)
       .fill();
 
+    // Left accent bar
+    doc
+      .fillColor(COLORS.primary)
+      .rect(x, y + 5, 3, rowHeight - 15)
+      .fill();
+
     // Metric name
     doc
       .fillColor(COLORS.lightText)
       .fontSize(9)
       .font('Helvetica')
-      .text(metric.name, x + 10, y + 8, { width: colWidth - 20 });
+      .text(metric.name, x + 12, y + 8, { width: colWidth - 24 });
 
     // Metric value
     const valueText = formatValue(metric.value, metric.unit);
@@ -207,7 +245,7 @@ function addKeyMetrics(doc, metrics) {
       .fillColor(COLORS.text)
       .fontSize(16)
       .font('Helvetica-Bold')
-      .text(valueText, x + 10, y + 24, { width: colWidth - 20 });
+      .text(valueText, x + 12, y + 24, { width: colWidth - 24 });
   });
 
   // Move cursor below metrics grid
@@ -219,7 +257,7 @@ function addKeyMetrics(doc, metrics) {
 /**
  * Add AI-generated insights
  */
-function addInsights(doc, insights) {
+function addInsights(doc, insights, COLORS) {
   // Check if we need a new page
   if (doc.y > 600) {
     doc.addPage();
@@ -307,7 +345,7 @@ function addInsights(doc, insights) {
     }
 
     doc
-      .fillColor('#7c3aed')
+      .fillColor(COLORS.accent || '#7c3aed')
       .fontSize(12)
       .font('Helvetica-Bold')
       .text('Growth Opportunities');
@@ -330,7 +368,7 @@ function addInsights(doc, insights) {
 /**
  * Add data preview table
  */
-function addDataTable(doc, tables) {
+function addDataTable(doc, tables, COLORS) {
   if (!tables || tables.length === 0) return;
 
   const table = tables[0]; // Use first table (data preview)
@@ -355,7 +393,7 @@ function addDataTable(doc, tables) {
   const startX = 50;
   let currentY = doc.y;
 
-  // Header row
+  // Header row with theme color
   doc
     .fillColor(COLORS.primary)
     .rect(startX, currentY, tableWidth, 20)
@@ -415,9 +453,9 @@ function addDataTable(doc, tables) {
 }
 
 /**
- * Add footer to all pages
+ * Add footer to all pages with branding
  */
-function addFooter(doc) {
+function addFooter(doc, COLORS) {
   const pages = doc.bufferedPageRange();
 
   for (let i = 0; i < pages.count; i++) {
@@ -443,10 +481,11 @@ function addFooter(doc) {
         { align: 'center', width: 495 }
       );
 
-    // Generated by
+    // Generated by InsightForge branding
     doc
+      .fillColor(COLORS.lightText)
       .text(
-        'Generated by Report Automation System',
+        `Generated by ${BRAND_NAME}`,
         50,
         785,
         { align: 'left', width: 200 }
@@ -492,9 +531,25 @@ function truncateText(text, maxWidth) {
  * @param {Object} comparison - Comparison data
  * @param {Object} aiInsights - AI-generated comparison insights
  * @param {Array} files - File info array
+ * @param {string} themeId - Color theme ID
  * @returns {string} Path to generated PDF file
  */
-export async function generateComparisonPDF(comparison, aiInsights, files) {
+export async function generateComparisonPDF(comparison, aiInsights, files, themeId = 'default') {
+  const theme = getTheme(themeId);
+
+  // Use theme colors in hex format for PDF
+  const COLORS = {
+    primary: theme.primaryHex,
+    secondary: theme.secondaryHex,
+    success: theme.successHex,
+    danger: theme.dangerHex,
+    text: theme.textHex,
+    lightText: theme.lightTextHex,
+    border: theme.borderHex,
+    background: theme.backgroundHex,
+    accent: theme.accentHex,
+  };
+
   const outputDir = path.join(__dirname, '..', 'generated');
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, { recursive: true });
@@ -512,7 +567,7 @@ export async function generateComparisonPDF(comparison, aiInsights, files) {
         margins: { top: 50, bottom: 50, left: 50, right: 50 },
         info: {
           Title: 'Comparison Report',
-          Author: 'Report Automation System',
+          Author: BRAND_NAME,
           Subject: `Comparison: ${files[0]?.filename} vs ${files[1]?.filename}`,
         },
       });
@@ -740,8 +795,8 @@ export async function generateComparisonPDF(comparison, aiInsights, files) {
         });
       }
 
-      // Footer
-      addFooter(doc);
+      // Footer with branding
+      addFooter(doc, COLORS);
 
       doc.end();
 
